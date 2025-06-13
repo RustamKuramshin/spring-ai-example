@@ -15,9 +15,9 @@ public class ChatController {
     private final ChatClient chatClient;
 
     @PostMapping("/generation")
-    public String generation(@RequestBody String prompt) {
+    public String generation(@RequestBody UserInputDto userInputDto) {
         return chatClient.prompt()
-                .user(prompt)
+                .user(userInputDto.getPrompt())
                 .call()
                 .content();
     }
