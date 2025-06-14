@@ -26,11 +26,10 @@ public class ChatController {
     }
 
     @GetMapping("/generation/stream")
-    public Flux<String> generation(@RequestParam String prompt) {
+    public Flux<String> generationStream(@RequestParam String prompt) {
         return chatClient.prompt()
                 .user(prompt)
                 .stream()
                 .content();
     }
-
 }
