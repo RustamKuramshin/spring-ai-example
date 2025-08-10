@@ -1,7 +1,6 @@
 package ru.kuramshindev.springaiexample.ui;
 
 import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.icon.Icon;
@@ -14,6 +13,7 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.component.Key;
 import ru.kuramshindev.springaiexample.ui.model.Conversation;
 import ru.kuramshindev.springaiexample.ui.model.Message;
 import ru.kuramshindev.springaiexample.ui.model.Role;
@@ -111,7 +111,9 @@ public class ChatView extends VerticalLayout {
                 promptInput.getElement());
 
         // Send button styling: circular, icon-only, inside the input at right center
-        sendBtn.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+        // Make the button white with a black arrow
+        // Remove primary theme to avoid blue background
+        // and use custom styles instead
         sendBtn.getStyle().set("position", "absolute");
         sendBtn.getStyle().set("right", "16px");
         sendBtn.getStyle().set("top", "50%");
@@ -122,7 +124,13 @@ public class ChatView extends VerticalLayout {
         sendBtn.getStyle().set("padding", "0");
         sendBtn.getStyle().set("min-width", "36px");
         sendBtn.getStyle().set("min-height", "36px");
+        sendBtn.getStyle().set("background-color", "#FFFFFF");
+        sendBtn.getStyle().set("color", "#000000");
         sendBtn.addClickListener(e -> onSend());
+
+        // Enter key sends the message when pressing Enter
+        // Note: Shift+Enter might also trigger send depending on Vaadin modifiers support
+        promptInput.addKeyDownListener(Key.ENTER, e -> onSend());
 
         // Wrap the text area and the send button to place the button inside the field
         Div inputWrapper = new Div(promptInput, sendBtn);
@@ -135,7 +143,18 @@ public class ChatView extends VerticalLayout {
         inputRow.setFlexGrow(1, inputWrapper);
         inputRow.getStyle().set("padding", "0 24px 24px 24px");
 
-        VerticalLayout right = new VerticalLayout(messagesScroller, inputRow);
+        // Make the chat dialog and input more compact (focused): 1/3 of page width
+        messagesScroller.setWidthFull();
+        VerticalLayout chatWrapper = new VerticalLayout(messagesScroller, inputRow);
+        chatWrapper.setWidth("33vw");
+        chatWrapper.setHeightFull();
+        chatWrapper.setPadding(false);
+        chatWrapper.setSpacing(false);
+        chatWrapper.setAlignItems(Alignment.STRETCH);
+        chatWrapper.getStyle().set("margin", "0 auto");
+        chatWrapper.expand(messagesScroller);
+
+        VerticalLayout right = new VerticalLayout(chatWrapper);
         right.setSizeFull();
         right.setPadding(true);
         right.setSpacing(true);
