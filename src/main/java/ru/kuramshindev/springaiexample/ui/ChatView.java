@@ -200,6 +200,9 @@ public class ChatView extends VerticalLayout {
                     bubble.getStyle().set("border-radius", "var(--lumo-border-radius-l)");
                     bubble.getStyle().set("max-width", "70%");
                     bubble.getStyle().set("white-space", "pre-wrap");
+                    // Ensure long words/URLs wrap inside the bubble and do not overflow
+                    bubble.getStyle().set("overflow-wrap", "anywhere");
+                    bubble.getStyle().set("word-break", "break-word");
                     bubble.getStyle().set("background-color", "#2E2E2E");
                     bubble.getStyle().set("color", "#FFFFFF");
                     bubble.setText(m.getContent());
@@ -209,6 +212,9 @@ public class ChatView extends VerticalLayout {
                 } else {
                     Div text = new Div();
                     text.getStyle().set("white-space", "pre-wrap");
+                    // Ensure long words/URLs wrap and stay within container
+                    text.getStyle().set("overflow-wrap", "anywhere");
+                    text.getStyle().set("word-break", "break-word");
                     text.getStyle().set("color", "#FFFFFF");
                     text.setText(m.getContent());
 
