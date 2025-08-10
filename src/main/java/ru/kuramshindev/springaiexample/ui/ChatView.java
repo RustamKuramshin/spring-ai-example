@@ -40,12 +40,20 @@ public class ChatView extends VerticalLayout {
 
         // Left panel: conversations
         conversationsPanel.setWidth("320px");
+        conversationsPanel.setHeightFull();
         conversationsPanel.setPadding(true);
         conversationsPanel.setSpacing(true);
         conversationsPanel.setAlignItems(Alignment.STRETCH);
-        conversationsPanel.add(new H2("Conversations"));
+        conversationsPanel.getStyle().set("background-color", "#181818");
+        conversationsPanel.getStyle().set("color", "#f0f0f0");
+        conversationsPanel.getStyle().set("border-right", "1px solid #2a2a2a");
+        H2 convTitle = new H2("Conversations");
+        convTitle.getStyle().set("color", "#f0f0f0");
+        conversationsPanel.add(convTitle);
 
         conversationsList.setItems(conversationService.getConversations());
+        conversationsList.getStyle().set("background", "transparent");
+        conversationsList.getStyle().set("color", "#f0f0f0");
         conversationService.getActiveConversation().ifPresent(conversationsList::setValue);
         conversationsList.addValueChangeListener(e -> {
             if (e.getValue() != null) {
@@ -73,9 +81,10 @@ public class ChatView extends VerticalLayout {
         conversationsPanel.add(conversationsList, convActions);
 
         // Right side: messages + input
-        messagesContainer.setPadding(false);
+        messagesContainer.setPadding(true);
         messagesContainer.setSpacing(true);
         messagesContainer.setWidthFull();
+        messagesContainer.getStyle().set("padding", "24px");
 
         messagesScroller.setContent(messagesContainer);
         messagesScroller.setSizeFull();
@@ -84,18 +93,30 @@ public class ChatView extends VerticalLayout {
         promptInput.setMinHeight("80px");
         promptInput.setMaxHeight("200px");
         promptInput.setPlaceholder("Type your message and press Send…");
+        // Dark style and rounded corners for the input
+        promptInput.getStyle().set("background-color", "#303030");
+        promptInput.getStyle().set("color", "#f0f0f0");
+        promptInput.getStyle().set("border-radius", "12px");
+        promptInput.getStyle().set("border", "1px solid #3a3a3a");
+        promptInput.getStyle().set("overflow", "auto");
+        promptInput.getElement().executeJs(
+                "const ta=$0.inputElement; const max=200; const adjust=()=>{ta.style.height='auto'; ta.style.height=Math.min(ta.scrollHeight,max)+'px'; ta.style.overflowY=(ta.scrollHeight>max)?'auto':'hidden';}; ta.addEventListener('input', adjust); requestAnimationFrame(adjust);",
+                promptInput.getElement());
         sendBtn.addClickListener(e -> onSend());
 
         HorizontalLayout inputRow = new HorizontalLayout(promptInput, sendBtn);
         inputRow.setWidthFull();
         inputRow.setAlignItems(FlexComponent.Alignment.END);
         inputRow.setFlexGrow(1, promptInput);
+        inputRow.getStyle().set("padding", "0 24px 24px 24px");
 
         VerticalLayout right = new VerticalLayout(messagesScroller, inputRow);
         right.setSizeFull();
-        right.setPadding(false);
+        right.setPadding(true);
         right.setSpacing(true);
         right.setAlignItems(Alignment.STRETCH);
+        right.getStyle().set("background-color", "#212121");
+        right.getStyle().set("color", "#f0f0f0");
 
         HorizontalLayout main = new HorizontalLayout(conversationsPanel, right);
         main.setSizeFull();
