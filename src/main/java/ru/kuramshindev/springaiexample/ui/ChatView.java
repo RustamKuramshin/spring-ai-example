@@ -13,18 +13,17 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.component.Key;
+import com.vladsch.flexmark.ext.tables.TablesExtension;
+import com.vladsch.flexmark.html.HtmlRenderer;
+import com.vladsch.flexmark.parser.Parser;
+import com.vladsch.flexmark.util.ast.Node;
+import com.vladsch.flexmark.util.misc.Extension;
+import org.jsoup.Jsoup;
+import org.jsoup.safety.Safelist;
 import ru.kuramshindev.springaiexample.ui.model.Conversation;
 import ru.kuramshindev.springaiexample.ui.model.Message;
 import ru.kuramshindev.springaiexample.ui.model.Role;
 
-import com.vladsch.flexmark.ext.tables.TablesExtension;
-import com.vladsch.flexmark.parser.Parser;
-import com.vladsch.flexmark.util.ast.Node;
-import com.vladsch.flexmark.html.HtmlRenderer;
-import com.vladsch.flexmark.util.misc.Extension;
-import org.jsoup.Jsoup;
-import org.jsoup.safety.Safelist;
 import java.util.List;
 
 @Route("")
