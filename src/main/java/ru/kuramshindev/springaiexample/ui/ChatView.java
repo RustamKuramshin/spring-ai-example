@@ -1,8 +1,11 @@
 package ru.kuramshindev.springaiexample.ui;
 
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H2;
+import com.vaadin.flow.component.icon.Icon;
+import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.listbox.ListBox;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -30,7 +33,7 @@ public class ChatView extends VerticalLayout {
     private final VerticalLayout messagesContainer = new VerticalLayout();
 
     private final TextArea promptInput = new TextArea();
-    private final Button sendBtn = new Button("Send");
+    private final Button sendBtn = new Button(new Icon(VaadinIcon.ARROW_UP));
 
     public ChatView(ConversationService conversationService) {
         this.conversationService = conversationService;
@@ -92,22 +95,44 @@ public class ChatView extends VerticalLayout {
         promptInput.setWidthFull();
         promptInput.setMinHeight("80px");
         promptInput.setMaxHeight("200px");
-        promptInput.setPlaceholder("Type your message and press Send…");
+        promptInput.setPlaceholder("Спросите что-нибудь...");
         // Dark style and rounded corners for the input
         promptInput.getStyle().set("background-color", "#303030");
         promptInput.getStyle().set("color", "#f0f0f0");
         promptInput.getStyle().set("border-radius", "12px");
         promptInput.getStyle().set("border", "1px solid #3a3a3a");
         promptInput.getStyle().set("overflow", "auto");
+        // Placeholder color
+        promptInput.getStyle().set("--vaadin-input-field-placeholder-color", "#A7A7A7");
+        // Ensure text doesn't go under the send button: extra right padding on the native textarea
+        // and auto-resize behavior remains
         promptInput.getElement().executeJs(
-                "const ta=$0.inputElement; const max=200; const adjust=()=>{ta.style.height='auto'; ta.style.height=Math.min(ta.scrollHeight,max)+'px'; ta.style.overflowY=(ta.scrollHeight>max)?'auto':'hidden';}; ta.addEventListener('input', adjust); requestAnimationFrame(adjust);",
+                "const ta=$0.inputElement; const max=200; const adjust=()=>{ta.style.height='auto'; ta.style.height=Math.min(ta.scrollHeight,max)+'px'; ta.style.overflowY=(ta.scrollHeight>max)?'auto':'hidden';}; ta.style.paddingRight='56px'; ta.addEventListener('input', adjust); requestAnimationFrame(adjust);",
                 promptInput.getElement());
+
+        // Send button styling: circular, icon-only, inside the input at right center
+        sendBtn.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+        sendBtn.getStyle().set("position", "absolute");
+        sendBtn.getStyle().set("right", "16px");
+        sendBtn.getStyle().set("top", "50%");
+        sendBtn.getStyle().set("transform", "translateY(-50%)");
+        sendBtn.getStyle().set("width", "36px");
+        sendBtn.getStyle().set("height", "36px");
+        sendBtn.getStyle().set("border-radius", "50%");
+        sendBtn.getStyle().set("padding", "0");
+        sendBtn.getStyle().set("min-width", "36px");
+        sendBtn.getStyle().set("min-height", "36px");
         sendBtn.addClickListener(e -> onSend());
 
-        HorizontalLayout inputRow = new HorizontalLayout(promptInput, sendBtn);
+        // Wrap the text area and the send button to place the button inside the field
+        Div inputWrapper = new Div(promptInput, sendBtn);
+        inputWrapper.setWidthFull();
+        inputWrapper.getStyle().set("position", "relative");
+
+        HorizontalLayout inputRow = new HorizontalLayout(inputWrapper);
         inputRow.setWidthFull();
         inputRow.setAlignItems(FlexComponent.Alignment.END);
-        inputRow.setFlexGrow(1, promptInput);
+        inputRow.setFlexGrow(1, inputWrapper);
         inputRow.getStyle().set("padding", "0 24px 24px 24px");
 
         VerticalLayout right = new VerticalLayout(messagesScroller, inputRow);
