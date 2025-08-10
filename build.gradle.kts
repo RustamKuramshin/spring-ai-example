@@ -66,6 +66,14 @@ dependencyManagement {
     }
 }
 
+vaadin {
+    productionMode = true
+}
+
+tasks.named<org.springframework.boot.gradle.tasks.bundling.BootJar>("bootJar") {
+    dependsOn("vaadinBuildFrontend")
+}
+
 tasks.withType<Test> {
     useJUnitPlatform()
 }

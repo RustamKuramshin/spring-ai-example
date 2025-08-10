@@ -38,3 +38,4 @@ out/
 .idea
 .env
 /src/main/frontend/generated/
+/node_modules/
