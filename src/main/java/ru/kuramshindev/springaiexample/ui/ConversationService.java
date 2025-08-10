@@ -3,6 +3,7 @@ package ru.kuramshindev.springaiexample.ui;
 import com.vaadin.flow.spring.annotation.UIScope;
 import lombok.Getter;
 import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.stereotype.Component;
 import ru.kuramshindev.springaiexample.ui.model.Conversation;
 import ru.kuramshindev.springaiexample.ui.model.Message;
@@ -75,6 +76,7 @@ public class ConversationService {
     public Message generateAiResponse(String prompt) {
         String ai = chatClient.prompt()
                 .user(prompt)
+                .advisors(a -> a.param(ChatMemory.CONVERSATION_ID, activeConversationId))
                 .call()
                 .content();
         Conversation conv = getActiveConversation().orElseThrow();
