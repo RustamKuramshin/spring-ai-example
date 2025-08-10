@@ -1,137 +1,216 @@
-# Spring AI + Vaadin — демонстрационное приложение
+# Spring AI + Vaadin — Demo Application
 
-Этот репозиторий показывает, как использовать Spring AI (Spring Boot 3.5) вместе с Vaadin 24 для построения простого чат‑интерфейса с поддержкой контекста диалога (Chat Memory). UI написан на Vaadin, серверная часть — Spring Boot, модель по умолчанию — OpenAI (gpt‑4o).
+This repository demonstrates how to use **Spring AI** (Spring Boot 3.5) together with **Vaadin 24** to build a simple chat interface with **conversation context memory** (Chat Memory).
+The UI is built with Vaadin, the backend with Spring Boot, and the default model is **OpenAI GPT-4o**.
 
-Основные моменты:
-- Spring AI ChatClient с хранением контекста через Chat Memory Repository (JDBC, схема H2 в комплекте)
-- Простое UI на Vaadin: список диалогов, отправка сообщений, блоки сообщений пользователя и ИИ
-- Actuator (включая поддержку Prometheus через Micrometer)
-- Быстрая локальная сборка и запуск
+---
 
-Важно: сборку производите именно этой командой, чтобы корректно собрать фронтенд Vaadin в production‑режиме:
+## Highlights
 
+* **Spring AI ChatClient** with context persistence via **Chat Memory Repository** (JDBC, H2 schema included)
+* Minimal Vaadin UI: conversation list, message sending, user/AI message blocks
+* **Actuator** (with Prometheus support via Micrometer)
+* Fast local build & run
+
+**Important:** Use the exact command below for production builds to ensure the Vaadin frontend compiles correctly:
+
+```bash
 ./gradlew clean bootJar -Pvaadin.productionMode
+```
 
+---
 
-## Содержание
-- Возможности
-- Архитектура и технологии
-- Требования
-- Настройка окружения
-- Сборка
-- Запуск
-- Режим разработки
-- Конфигурация (application.properties)
-- База данных / Chat Memory
-- Метрики и Actuator
-- Частые вопросы
+## Table of Contents
 
+* Features
+* Architecture & Tech Stack
+* Requirements
+* Environment Setup
+* Build
+* Run
+* Development Mode
+* Configuration (application.properties)
+* Database / Chat Memory
+* Metrics & Actuator
+* FAQ
+* License
 
-## Возможности
-- Многооконные «беседы» (conversations) в левой панели, переключение активной беседы
-- Чат с ИИ на главной странице (маршрут "/")
-- Сохранение контекста беседы для лучшего качества ответов модели
-- Минимальный UI без внешних зависимостей CSS/JS — всё на компонентах Vaadin
+---
 
+## Features
 
-## Архитектура и технологии
-- Java 21, Gradle Kotlin DSL
-- Spring Boot 3.5.x
-- Vaadin 24.8.x
-- Spring AI 1.0.x (OpenAI starter + JDBC Chat Memory Repository)
-- H2 в памяти (по умолчанию) — для примера, вместе со схемой репозитория памяти
-- Micrometer + Prometheus Registry
+* Multi-window conversations in the left panel, with active conversation switching
+* Chat with AI on the main page (`/`)
+* Conversation context persistence for higher-quality model responses
+* Minimal UI — no external CSS/JS, all built with Vaadin components
 
-Ключевые классы:
-- ru.kuramshindev.springaiexample.ui.ChatView — основное Vaadin‑представление (маршрут "/")
-- ru.kuramshindev.springaiexample.ui.ConversationService — хранение списка бесед, интеграция с ChatClient и Chat Memory
-- ru.kuramshindev.springaiexample.ui.model.* — модели «беседа», «сообщение», «роль»
+---
 
+## Architecture & Tech Stack
 
-## Требования
-- Java 21+
-- Node.js не требуется устанавливать вручную — Vaadin плагин в Gradle соберёт фронтенд автоматически
-- Действующий ключ OpenAI API (переменная среды OPENAI_API_KEY)
+* Java 21, Gradle Kotlin DSL
+* Spring Boot 3.5.x
+* Vaadin 24.8.x
+* Spring AI 1.0.x (OpenAI starter + JDBC Chat Memory Repository)
+* H2 in-memory database (default) with bundled memory repository schema
+* Micrometer + Prometheus registry
 
+**Key Classes:**
 
-## Настройка окружения
-1) Установите переменную среды с вашим ключом OpenAI:
-   - macOS/Linux: export OPENAI_API_KEY=sk-...
-   - Windows (PowerShell): $env:OPENAI_API_KEY="sk-..."
+* `ru.kuramshindev.springaiexample.ui.ChatView` — main Vaadin view (`/`)
+* `ru.kuramshindev.springaiexample.ui.ConversationService` — conversation storage, ChatClient & Chat Memory integration
+* `ru.kuramshindev.springaiexample.ui.model.*` — conversation, message, and role models
 
-2) Либо создайте файл .env в корне (не храните реальные ключи в VCS):
+---
+
+## Requirements
+
+* Java 21+
+* Node.js **not** required — the Vaadin Gradle plugin builds the frontend automatically
+* A valid **OpenAI API key** (`OPENAI_API_KEY` environment variable)
+
+---
+
+## Environment Setup
+
+1. Set your OpenAI API key:
+
+    * macOS/Linux:
+
+      ```bash
+      export OPENAI_API_KEY=sk-...
+      ```
+    * Windows (PowerShell):
+
+      ```powershell
+      $env:OPENAI_API_KEY="sk-..."
+      ```
+
+2. Or create a `.env` file in the project root (do not commit real keys):
+
+   ```env
    OPENAI_API_KEY=sk-...
+   ```
 
-В репозитории уже добавлена запись .env в .gitignore.
+`.env` is already in `.gitignore`.
 
+---
 
-## Сборка
-Production‑сборка (обязательно для корректной сборки фронтенда Vaadin):
+## Build
 
+Production build (required for correct Vaadin frontend compilation):
+
+```bash
 ./gradlew clean bootJar -Pvaadin.productionMode
+```
 
-Итоговый JAR появится в build/libs/spring-ai-example-<version>.jar
+The final JAR will be at:
 
+```
+build/libs/spring-ai-example-<version>.jar
+```
 
-## Запуск
-После сборки запустите приложение:
+---
 
+## Run
+
+After building, start the application:
+
+```bash
 ./run.sh
+```
 
-или напрямую:
+or directly:
 
+```bash
 java -jar build/libs/spring-ai-example-*.jar
+```
 
-По умолчанию приложение доступно на http://localhost:8080
+Default URL: [http://localhost:8080](http://localhost:8080)
 
+---
 
-## Режим разработки
-Для быстрого старта без production‑сборки можно использовать bootRun (Vaadin включит DevMode):
+## Development Mode
 
+For quick startup without a production build:
+
+```bash
 ./gradlew bootRun
+```
 
-Учтите, что для финальной сборки фронтенда и публикации используйте production‑команду из раздела «Сборка».
+Vaadin will run in DevMode.
+**Note:** For final builds and deployment, use the production build command from the **Build** section.
 
+---
 
-## Конфигурация (application.properties)
-Основные параметры по умолчанию находятся в src/main/resources/application.properties. Важно:
-- Spring AI:
-  - spring.ai.openai.api-key=${OPENAI_API_KEY}
-  - spring.ai.openai.chat.options.model=gpt-4o
-  - spring.ai.openai.chat.options.temperature=0.2
-  - spring.ai.chat.memory.repository.jdbc.schema=classpath:ai/chat/memory/repository/jdbc/schema-h2.sql
-- БД H2 (в памяти) и консоль H2:
-  - spring.datasource.url=jdbc:h2:mem:testdb
-  - spring.h2.console.enabled=true (консоль на /h2-console)
+## Configuration (`application.properties`)
 
-Вы можете переопределять значения через переменные окружения или профили Spring.
+Key default settings (`src/main/resources/application.properties`):
 
+* **Spring AI**:
 
-## База данных / Chat Memory
-Для примера используется H2 in-memory, схема репозитория памяти подгружается из
+  ```properties
+  spring.ai.openai.api-key=${OPENAI_API_KEY}
+  spring.ai.openai.chat.options.model=gpt-4o
+  spring.ai.openai.chat.options.temperature=0.2
+  spring.ai.chat.memory.repository.jdbc.schema=classpath:ai/chat/memory/repository/jdbc/schema-h2.sql
+  ```
+* **H2 in-memory DB & console**:
+
+  ```properties
+  spring.datasource.url=jdbc:h2:mem:testdb
+  spring.h2.console.enabled=true
+  ```
+
+  Console available at `/h2-console`.
+
+Override values via environment variables or Spring profiles as needed.
+
+---
+
+## Database / Chat Memory
+
+Uses H2 in-memory by default.
+The schema is loaded from:
+
+```
 src/main/resources/ai/chat/memory/repository/jdbc/schema-h2.sql
+```
 
-## Метрики и Actuator
-Подключён spring-boot-starter-actuator и micrometer‑registry‑prometheus. После запуска доступны стандартные эндпоинты:
-- /actuator/health
-- /actuator/info
-- /actuator/metrics
-- /actuator/prometheus (если включено)
+---
 
+## Metrics & Actuator
 
-## Как это работает (коротко)
-- UI (Vaadin) рендерит список бесед и сообщения
-- При отправке запроса ConversationService добавляет сообщение пользователя и вызывает ChatClient
-- В вызове ChatClient передаётся параметр ChatMemory.CONVERSATION_ID, чтобы Spring AI мог связать историю сообщений с конкретной беседой
-- Ответ ИИ добавляется в текущую беседу и отображается в UI
+Includes `spring-boot-starter-actuator` and `micrometer-registry-prometheus`.
+Available endpoints:
 
+* `/actuator/health`
+* `/actuator/info`
+* `/actuator/metrics`
+* `/actuator/prometheus` (if enabled)
 
-## Частые вопросы
-- Где задаётся модель? В application.properties: spring.ai.openai.chat.options.model=gpt-4o
-- Где включить/выключить логирование SQL и Spring AI? Там же: logging.level.*
-- Как открыть H2 консоль? http://localhost:8080/h2-console
-- Ошибка «API key not set»: проверьте переменную окружения OPENAI_API_KEY или .env
+---
 
+## How It Works (Briefly)
 
-## Лицензия
-Проект предназначен для демонстрационных целей. Используйте и адаптируйте под свои задачи.
+1. UI (Vaadin) renders the conversation list and messages.
+2. On sending a message, `ConversationService` adds the user’s message and calls `ChatClient`.
+3. `ChatClient` receives `ChatMemory.CONVERSATION_ID` to link message history to the active conversation.
+4. AI response is added to the conversation and rendered in the UI.
+
+---
+
+## FAQ
+
+* **Where is the model set?** In `application.properties`:
+  `spring.ai.openai.chat.options.model=gpt-4o`
+* **How to enable/disable SQL & Spring AI logging?** Same file via `logging.level.*`
+* **How to access the H2 console?** [http://localhost:8080/h2-console](http://localhost:8080/h2-console)
+* **Error “API key not set”?** Check `OPENAI_API_KEY` env var or `.env` file.
+
+---
+
+## License
+
+This project is for demonstration purposes.
+Feel free to use and adapt it for your own needs.
