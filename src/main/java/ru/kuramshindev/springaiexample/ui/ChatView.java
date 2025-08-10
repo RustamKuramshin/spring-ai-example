@@ -190,24 +190,32 @@ public class ChatView extends VerticalLayout {
         messagesContainer.removeAll();
         conversationService.getActiveConversation().ifPresent(conv -> {
             for (Message m : conv.getMessages()) {
-                Div bubble = new Div();
-                bubble.getStyle().set("padding", "var(--lumo-space-m)");
-                bubble.getStyle().set("border-radius", "var(--lumo-border-radius-l)");
-                bubble.getStyle().set("max-width", "70%");
-                bubble.getStyle().set("white-space", "pre-wrap");
-                bubble.setText(m.getContent());
-
                 HorizontalLayout line = new HorizontalLayout();
                 line.setWidthFull();
                 line.setPadding(false);
+
                 if (m.getRole() == Role.USER) {
+                    Div bubble = new Div();
+                    bubble.getStyle().set("padding", "var(--lumo-space-m)");
+                    bubble.getStyle().set("border-radius", "var(--lumo-border-radius-l)");
+                    bubble.getStyle().set("max-width", "70%");
+                    bubble.getStyle().set("white-space", "pre-wrap");
+                    bubble.getStyle().set("background-color", "#2E2E2E");
+                    bubble.getStyle().set("color", "#FFFFFF");
+                    bubble.setText(m.getContent());
+
                     line.setJustifyContentMode(FlexComponent.JustifyContentMode.END);
-                    bubble.getStyle().set("background", "var(--lumo-primary-color-10pct)");
+                    line.add(bubble);
                 } else {
+                    Div text = new Div();
+                    text.getStyle().set("white-space", "pre-wrap");
+                    text.getStyle().set("color", "#FFFFFF");
+                    text.setText(m.getContent());
+
                     line.setJustifyContentMode(FlexComponent.JustifyContentMode.START);
-                    bubble.getStyle().set("background", "var(--lumo-contrast-10pct)");
+                    line.add(text);
                 }
-                line.add(bubble);
+
                 messagesContainer.add(line);
             }
         });
