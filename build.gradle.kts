@@ -1,7 +1,8 @@
 plugins {
     java
-    id("org.springframework.boot") version "3.5.0"
+    id("org.springframework.boot") version "3.5.4"
     id("io.spring.dependency-management") version "1.1.7"
+    id("com.vaadin") version "24.8.3"
 }
 
 group = "ru.kuramshin-dev"
@@ -34,13 +35,14 @@ repositories {
 }
 
 extra["springAiVersion"] = "1.0.0"
+extra["vaadinVersion"] = "24.8.3"
 
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.springframework.boot:spring-boot-starter-web")
 
     // Vaadin UI
-    implementation("com.vaadin:vaadin-spring-boot-starter:24.5.6")
+    implementation("com.vaadin:vaadin-spring-boot-starter")
 
     // Spring AI
     implementation(platform("org.springframework.ai:spring-ai-bom:1.0.0-SNAPSHOT"))
@@ -57,6 +59,7 @@ dependencies {
 dependencyManagement {
     imports {
         mavenBom("org.springframework.ai:spring-ai-bom:${property("springAiVersion")}")
+        mavenBom("com.vaadin:vaadin-bom:${property("vaadinVersion")}")
     }
 }
 
