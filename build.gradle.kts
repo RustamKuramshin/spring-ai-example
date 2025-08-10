@@ -39,6 +39,8 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.springframework.boot:spring-boot-starter-web")
 
+    // Vaadin UI
+    implementation("com.vaadin:vaadin-spring-boot-starter:24.5.6")
 
     // Spring AI
     implementation(platform("org.springframework.ai:spring-ai-bom:1.0.0-SNAPSHOT"))

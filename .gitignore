@@ -37,3 +37,4 @@ out/
 .vscode/
 .idea
 .env
+/src/main/frontend/generated/
