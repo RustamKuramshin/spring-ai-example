@@ -51,6 +51,10 @@ dependencies {
     implementation("org.springframework.ai:spring-ai-starter-model-openai")
     implementation ("org.springframework.ai:spring-ai-starter-model-chat-memory-repository-jdbc")
 
+    // Markdown rendering
+    implementation("com.vladsch.flexmark:flexmark-all:0.64.8")
+    implementation("org.jsoup:jsoup:1.17.2")
+
     compileOnly("org.projectlombok:lombok")
     runtimeOnly("com.h2database:h2")
     runtimeOnly("io.micrometer:micrometer-registry-prometheus")

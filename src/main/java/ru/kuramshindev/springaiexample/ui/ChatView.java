@@ -18,9 +18,38 @@ import ru.kuramshindev.springaiexample.ui.model.Conversation;
 import ru.kuramshindev.springaiexample.ui.model.Message;
 import ru.kuramshindev.springaiexample.ui.model.Role;
 
+import com.vladsch.flexmark.ext.tables.TablesExtension;
+import com.vladsch.flexmark.parser.Parser;
+import com.vladsch.flexmark.util.ast.Node;
+import com.vladsch.flexmark.html.HtmlRenderer;
+import com.vladsch.flexmark.util.misc.Extension;
+import org.jsoup.Jsoup;
+import org.jsoup.safety.Safelist;
+import java.util.List;
+
 @Route("")
 @PageTitle("AI Chat")
 public class ChatView extends VerticalLayout {
+
+    // Markdown parser and renderer (static to reuse)
+    private static final Parser MD_PARSER = Parser.builder()
+            .extensions(List.<Extension>of(TablesExtension.create()))
+            .build();
+    private static final HtmlRenderer MD_RENDERER = HtmlRenderer.builder()
+            .build();
+
+    private static final Safelist MARKDOWN_SAFELIST = Safelist.relaxed()
+            .addTags("table", "thead", "tbody", "tr", "th", "td", "hr")
+            .addAttributes("a", "target", "rel");
+
+    private static String markdownToSafeHtml(String markdown) {
+        if (markdown == null || markdown.isEmpty()) return "";
+        Node document = MD_PARSER.parse(markdown);
+        String html = MD_RENDERER.render(document);
+        // Ensure links open in new tab and are safe (noopener)
+        html = html.replaceAll("<a ", "<a target=\"_blank\" rel=\"noopener noreferrer\" ");
+        return Jsoup.clean(html, MARKDOWN_SAFELIST);
+    }
 
     private final ConversationService conversationService;
 
@@ -128,9 +157,22 @@ public class ChatView extends VerticalLayout {
         sendBtn.getStyle().set("color", "#000000");
         sendBtn.addClickListener(e -> onSend());
 
-        // Enter key sends the message when pressing Enter
-        // Note: Shift+Enter might also trigger send depending on Vaadin modifiers support
-        promptInput.addKeyDownListener(Key.ENTER, e -> onSend());
+        // Enter key behavior: Send on Enter, newline on Shift+Enter (handled on the client to prevent newline insertion)
+        promptInput.getElement().executeJs(
+                String.format("""
+                        const textarea = this.querySelector('[id$=\\"%s\\"]');\
+                        if (!textarea) return;\
+                        textarea.addEventListener('keydown', function(e) {\
+                          if (e.key === 'Enter' && e.shiftKey) {\
+                            e.preventDefault();\
+                            textarea.value += '\\n';\
+                          } else if (e.key === 'Enter') {\
+                            e.preventDefault();\
+                            this.$server.sendPrompt(textarea.value);\
+                            textarea.value = "";\
+                          }\
+                        }.bind(this));""", promptInput.getId().orElse(null))
+        );
 
         // Wrap the text area and the send button to place the button inside the field
         Div inputWrapper = new Div(promptInput, sendBtn);
@@ -211,12 +253,19 @@ public class ChatView extends VerticalLayout {
                     line.add(bubble);
                 } else {
                     Div text = new Div();
-                    text.getStyle().set("white-space", "pre-wrap");
+                    // For markdown-rendered content, use normal white-space (HTML handles line breaks)
+                    text.getStyle().set("white-space", "normal");
                     // Ensure long words/URLs wrap and stay within container
                     text.getStyle().set("overflow-wrap", "anywhere");
                     text.getStyle().set("word-break", "break-word");
                     text.getStyle().set("color", "#FFFFFF");
-                    text.setText(m.getContent());
+                    text.getStyle().set("max-width", "70%");
+                    text.getStyle().set("background-color", "transparent");
+                    // Basic spacing similar to user bubble, but subtle
+                    text.getStyle().set("padding", "var(--lumo-space-s) 0");
+
+                    String safeHtml = markdownToSafeHtml(m.getContent());
+                    text.getElement().setProperty("innerHTML", safeHtml);
 
                     line.setJustifyContentMode(FlexComponent.JustifyContentMode.START);
                     line.add(text);
