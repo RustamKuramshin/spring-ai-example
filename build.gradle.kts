@@ -51,6 +51,8 @@ dependencies {
     implementation("org.springframework.ai:spring-ai-starter-model-openai")
     implementation ("org.springframework.ai:spring-ai-starter-model-chat-memory-repository-jdbc")
 
+    implementation("commons-io:commons-io:2.20.0")
+
     // Markdown rendering
     implementation("com.vladsch.flexmark:flexmark-all:0.64.8")
     implementation("org.jsoup:jsoup:1.17.2")

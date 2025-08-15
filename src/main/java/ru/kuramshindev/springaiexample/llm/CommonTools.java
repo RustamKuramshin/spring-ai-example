@@ -1,4 +1,4 @@
-package ru.kuramshindev.springaiexample;
+package ru.kuramshindev.springaiexample.llm;
 
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Component;
@@ -8,7 +8,7 @@ import java.io.InputStreamReader;
 import java.time.LocalDateTime;
 
 @Component
-public class Tools {
+public class CommonTools {
 
     public String getCurrentDateTime() {
         return LocalDateTime.now().atZone(LocaleContextHolder.getTimeZone().toZoneId()).toString();
