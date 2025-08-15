@@ -2,9 +2,8 @@ package ru.kuramshindev.springaiexample.ui;
 
 import com.vaadin.flow.spring.annotation.UIScope;
 import lombok.Getter;
-import org.springframework.ai.chat.client.ChatClient;
-import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.stereotype.Component;
+import ru.kuramshindev.springaiexample.llm.LLMService;
 import ru.kuramshindev.springaiexample.ui.model.Conversation;
 import ru.kuramshindev.springaiexample.ui.model.Message;
 import ru.kuramshindev.springaiexample.ui.model.Role;
@@ -19,18 +18,18 @@ import java.util.UUID;
 @UIScope
 public class ConversationService {
 
-    private final ChatClient chatClient;
+    private final LLMService llmService;
 
     @Getter
     private final List<Conversation> conversations = new ArrayList<>();
     private UUID activeConversationId;
 
-    public ConversationService(ChatClient chatClient) {
-        this.chatClient = chatClient;
+    public ConversationService(LLMService llmService) {
         // initialize with one empty conversation
         Conversation initial = new Conversation("Conversation 1");
         conversations.add(initial);
         activeConversationId = initial.getId();
+        this.llmService = llmService;
     }
 
     public Optional<Conversation> getActiveConversation() {
@@ -74,11 +73,7 @@ public class ConversationService {
     }
 
     public Message generateAiResponse(String prompt) {
-        String ai = chatClient.prompt()
-                .user(prompt)
-                .advisors(a -> a.param(ChatMemory.CONVERSATION_ID, activeConversationId))
-                .call()
-                .content();
+        String ai = llmService.generateAiResponse(activeConversationId.toString(), prompt);
         Conversation conv = getActiveConversation().orElseThrow();
         Message msg = new Message(Role.AI, ai, LocalDateTime.now());
         conv.getMessages().add(msg);

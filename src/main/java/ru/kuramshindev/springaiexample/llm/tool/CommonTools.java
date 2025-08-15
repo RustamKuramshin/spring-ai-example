@@ -1,4 +1,4 @@
-package ru.kuramshindev.springaiexample.llm;
+package ru.kuramshindev.springaiexample.llm.tool;
 
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Component;

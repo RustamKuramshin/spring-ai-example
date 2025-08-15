@@ -3,9 +3,10 @@ package ru.kuramshindev.springaiexample.llm;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.SimpleLoggerAdvisor;
 import org.springframework.ai.chat.model.ChatModel;
-import org.springframework.stereotype.Service;
+import ru.kuramshindev.springaiexample.llm.tool.CommonTools;
+import ru.kuramshindev.springaiexample.llm.tool.MavenTools;
+import ru.kuramshindev.springaiexample.llm.tool.WorkspaceTools;
 
-@Service
 public class AgentService {
 
     private final ChatClient client;

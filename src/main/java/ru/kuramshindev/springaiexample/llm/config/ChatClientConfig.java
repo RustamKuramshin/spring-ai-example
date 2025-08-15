@@ -1,4 +1,4 @@
-package ru.kuramshindev.springaiexample.llm;
+package ru.kuramshindev.springaiexample.llm.config;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.ai.chat.client.ChatClient;

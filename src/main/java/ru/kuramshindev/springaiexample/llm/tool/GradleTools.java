@@ -1,4 +1,4 @@
-package ru.kuramshindev.springaiexample.llm;
+package ru.kuramshindev.springaiexample.llm.tool;
 
 import org.springframework.ai.tool.annotation.Tool;
 import org.springframework.stereotype.Component;
