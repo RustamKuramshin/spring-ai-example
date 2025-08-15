@@ -39,3 +39,4 @@ out/
 .env
 /src/main/frontend/generated/
 /node_modules/
+*.jar

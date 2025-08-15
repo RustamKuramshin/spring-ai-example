@@ -17,8 +17,7 @@ import java.util.List;
 public class GradleTools {
 
     private static final Duration DEFAULT_TIMEOUT = Duration.ofMinutes(10);
-    private static final int MAX_OUTPUT_CHARS = 200_000; // защита от слишком длинного лога
-
+    private static final int MAX_OUTPUT_CHARS = 200_000;
     private final Path workDir = Path.of("").toAbsolutePath();
     private final boolean isWindows = System.getProperty("os.name").toLowerCase().contains("win");
 

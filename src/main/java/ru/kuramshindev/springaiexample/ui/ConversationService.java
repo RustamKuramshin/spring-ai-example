@@ -79,4 +79,13 @@ public class ConversationService {
         conv.getMessages().add(msg);
         return msg;
     }
+
+    public Message generateAgentResponse(String prompt) {
+        // Call one agent iteration with tool-calling enabled
+        String ai = llmService.agentRunOnce(activeConversationId.toString(), new org.springframework.ai.chat.messages.UserMessage(prompt));
+        Conversation conv = getActiveConversation().orElseThrow();
+        Message msg = new Message(Role.AI, ai, LocalDateTime.now());
+        conv.getMessages().add(msg);
+        return msg;
+    }
 }

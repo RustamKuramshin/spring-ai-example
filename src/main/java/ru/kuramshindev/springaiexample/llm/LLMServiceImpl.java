@@ -3,7 +3,6 @@ package ru.kuramshindev.springaiexample.llm;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
-import org.springframework.ai.chat.client.advisor.SimpleLoggerAdvisor;
 import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.chat.messages.Message;
 import org.springframework.ai.chat.messages.SystemMessage;
@@ -84,6 +83,7 @@ public class LLMServiceImpl implements LLMService {
 
         return chatClient
                 .prompt(new Prompt(promptMessages))
+                .advisors(a -> a.param(ChatMemory.CONVERSATION_ID, conversationId))
                 .tools(workspace, maven, gradle, commonTools)
                 .call()
                 .content();

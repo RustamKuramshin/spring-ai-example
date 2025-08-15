@@ -1,5 +1,7 @@
 package ru.kuramshindev.springaiexample.llm.tool;
 
+import org.springframework.ai.tool.annotation.Tool;
+import org.springframework.ai.tool.annotation.ToolParam;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Component;
 
@@ -10,11 +12,20 @@ import java.time.LocalDateTime;
 @Component
 public class CommonTools {
 
+    @Tool(description = "Вернуть текущее дата/время в часовом поясе текущего контекста (ISO-8601 с зоной).")
     public String getCurrentDateTime() {
-        return LocalDateTime.now().atZone(LocaleContextHolder.getTimeZone().toZoneId()).toString();
+        return LocalDateTime.now()
+                .atZone(LocaleContextHolder.getTimeZone().toZoneId())
+                .toString();
     }
 
-    public String runCommand(String command) throws Exception {
+    @Tool(description = """
+            Выполнить команду в shell (bash -c) в текущей рабочей директории и вернуть stdout/stderr и код выхода.
+            ВНИМАНИЕ: использовать только для разрешённых, безопасных команд.
+            """)
+    public String runCommand(
+            @ToolParam(description = "Полная команда для bash -c") String command
+    ) throws Exception {
         ProcessBuilder builder = new ProcessBuilder();
         builder.command("bash", "-c", command);
 

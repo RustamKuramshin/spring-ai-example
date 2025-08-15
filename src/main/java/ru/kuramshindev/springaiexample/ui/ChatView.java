@@ -11,6 +11,7 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.Scroller;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextArea;
+import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vladsch.flexmark.ext.tables.TablesExtension;
@@ -62,6 +63,7 @@ public class ChatView extends VerticalLayout {
 
     private final TextArea promptInput = new TextArea();
     private final Button sendBtn = new Button(new Icon(VaadinIcon.ARROW_UP));
+    private final Select<String> modeSelect = new Select<>();
 
     public ChatView(ConversationService conversationService) {
         this.conversationService = conversationService;
@@ -173,12 +175,19 @@ public class ChatView extends VerticalLayout {
                         }.bind(this));""", promptInput.getId().orElse(null))
         );
 
+        // Mode selector
+        modeSelect.setItems("Chat", "Agent");
+        modeSelect.setValue("Chat");
+        modeSelect.setLabel("Mode");
+        modeSelect.setWidth("140px");
+        modeSelect.getStyle().set("margin-right", "12px");
+
         // Wrap the text area and the send button to place the button inside the field
         Div inputWrapper = new Div(promptInput, sendBtn);
         inputWrapper.setWidthFull();
         inputWrapper.getStyle().set("position", "relative");
 
-        HorizontalLayout inputRow = new HorizontalLayout(inputWrapper);
+        HorizontalLayout inputRow = new HorizontalLayout(modeSelect, inputWrapper);
         inputRow.setWidthFull();
         inputRow.setAlignItems(FlexComponent.Alignment.END);
         inputRow.setFlexGrow(1, inputWrapper);
@@ -223,7 +232,11 @@ public class ChatView extends VerticalLayout {
         conversationService.addUserMessage(prompt);
         promptInput.clear();
         refreshMessages();
-        conversationService.generateAiResponse(prompt);
+        if ("Agent".equalsIgnoreCase(modeSelect.getValue())) {
+            conversationService.generateAgentResponse(prompt);
+        } else {
+            conversationService.generateAiResponse(prompt);
+        }
         refreshMessages();
     }
 
