@@ -10,5 +10,5 @@ public interface LLMService {
 
     String generateAiResponse(String conversationId, String prompt);
 
-    String agentRunOnce(String conversationId, UserMessage userMessage);
+    String agentRunOnce(String conversationId, UserMessage userMessage, AgentMode mode);
 }

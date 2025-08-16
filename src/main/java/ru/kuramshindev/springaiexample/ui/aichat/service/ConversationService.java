@@ -81,9 +81,9 @@ public class ConversationService {
         return msg;
     }
 
-    public Message generateAgentResponse(String prompt) {
+    public Message generateAgentResponse(String prompt, ru.kuramshindev.springaiexample.llm.AgentMode mode) {
         // Call one agent iteration with tool-calling enabled
-        String ai = llmService.agentRunOnce(activeConversationId.toString(), new UserMessage(prompt));
+        String ai = llmService.agentRunOnce(activeConversationId.toString(), new UserMessage(prompt), mode);
         Conversation conv = getActiveConversation().orElseThrow();
         Message msg = new Message(Role.AI, ai, LocalDateTime.now());
         conv.getMessages().add(msg);

@@ -12,7 +12,8 @@ import org.springframework.stereotype.Service;
 import ru.kuramshindev.springaiexample.llm.tool.CommonTools;
 import ru.kuramshindev.springaiexample.llm.tool.GradleTools;
 import ru.kuramshindev.springaiexample.llm.tool.MavenTools;
-import ru.kuramshindev.springaiexample.llm.tool.WorkspaceTools;
+import ru.kuramshindev.springaiexample.llm.tool.WorkspaceReadOnlyTools;
+import ru.kuramshindev.springaiexample.llm.tool.WorkspaceWriteTools;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,7 +27,8 @@ public class LLMServiceImpl implements LLMService {
 
     private final ChatClient chatClient;
 
-    private final WorkspaceTools workspace;
+    private final WorkspaceReadOnlyTools roWorkspace;
+    private final WorkspaceWriteTools wrWorkspace;
     private final MavenTools maven;
     private final GradleTools gradle;
     private final CommonTools commonTools;
@@ -75,17 +77,27 @@ public class LLMServiceImpl implements LLMService {
     }
 
     @Override
-    public String agentRunOnce(String conversationId, UserMessage userMessage) {
+    public String agentRunOnce(String conversationId, UserMessage userMessage, AgentMode mode) {
 
         List<Message> promptMessages = new ArrayList<>();
         promptMessages.add(new SystemMessage(SYSTEM));
         promptMessages.add(userMessage);
 
-        return chatClient
-                .prompt(new Prompt(promptMessages))
-                .advisors(a -> a.param(ChatMemory.CONVERSATION_ID, conversationId))
-                .tools(workspace, maven, gradle, commonTools)
-                .call()
-                .content();
+        if (mode == AgentMode.ASK) {
+            return chatClient
+                    .prompt(new Prompt(promptMessages))
+                    .advisors(a -> a.param(ChatMemory.CONVERSATION_ID, conversationId))
+                    .tools(roWorkspace)
+                    .call()
+                    .content();
+        } else {
+            // CODE mode: read + write + build tools
+            return chatClient
+                    .prompt(new Prompt(promptMessages))
+                    .advisors(a -> a.param(ChatMemory.CONVERSATION_ID, conversationId))
+                    .tools(roWorkspace, wrWorkspace, maven, gradle, commonTools)
+                    .call()
+                    .content();
+        }
     }
 }

@@ -1,16 +1,18 @@
 package ru.kuramshindev.springaiexample.ui.aichat.view;
 
+import com.vaadin.flow.component.Key;
+import com.vaadin.flow.component.ShortcutRegistration;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.listbox.ListBox;
+import com.vaadin.flow.component.menubar.MenuBar;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.Scroller;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
@@ -21,6 +23,7 @@ import com.vladsch.flexmark.util.ast.Node;
 import com.vladsch.flexmark.util.misc.Extension;
 import org.jsoup.Jsoup;
 import org.jsoup.safety.Safelist;
+import ru.kuramshindev.springaiexample.llm.AgentMode;
 import ru.kuramshindev.springaiexample.ui.aichat.model.Conversation;
 import ru.kuramshindev.springaiexample.ui.aichat.model.Message;
 import ru.kuramshindev.springaiexample.ui.aichat.model.Role;
@@ -64,7 +67,10 @@ public class ChatView extends VerticalLayout {
 
     private final TextArea promptInput = new TextArea();
     private final Button sendBtn = new Button(new Icon(VaadinIcon.ARROW_UP));
-    private final Select<String> modeSelect = new Select<>();
+
+    // Mode state
+    private boolean agentModeActive = false; // false = Chat, true = Agent
+    private AgentMode agentSubMode = AgentMode.ASK; // default for Agent
 
     public ChatView(ConversationService conversationService) {
         this.conversationService = conversationService;
@@ -159,36 +165,49 @@ public class ChatView extends VerticalLayout {
         sendBtn.getStyle().set("color", "#000000");
         sendBtn.addClickListener(e -> onSend());
 
-        // Enter key behavior: Send on Enter, newline on Shift+Enter (handled on the client to prevent newline insertion)
-        promptInput.getElement().executeJs(
-                String.format("""
-                        const textarea = this.querySelector('[id$=\\"%s\\"]');\
-                        if (!textarea) return;\
-                        textarea.addEventListener('keydown', function(e) {\
-                          if (e.key === 'Enter' && e.shiftKey) {\
-                            e.preventDefault();\
-                            textarea.value += '\\n';\
-                          } else if (e.key === 'Enter') {\
-                            e.preventDefault();\
-                            this.$server.sendPrompt(textarea.value);\
-                            textarea.value = "";\
-                          }\
-                        }.bind(this));""", promptInput.getId().orElse(null))
-        );
-
-        // Mode selector
-        modeSelect.setItems("Chat", "Agent");
-        modeSelect.setValue("Chat");
-        modeSelect.setLabel("Mode");
-        modeSelect.setWidth("140px");
-        modeSelect.getStyle().set("margin-right", "12px");
-
         // Wrap the text area and the send button to place the button inside the field
         Div inputWrapper = new Div(promptInput, sendBtn);
         inputWrapper.setWidthFull();
         inputWrapper.getStyle().set("position", "relative");
 
-        HorizontalLayout inputRow = new HorizontalLayout(modeSelect, inputWrapper);
+        // MenuBar inside the input area, below the text area
+        MenuBar modeBar = new MenuBar();
+        modeBar.setOpenOnHover(true);
+        modeBar.getStyle().set("position", "absolute");
+        modeBar.getStyle().set("left", "12px");
+        modeBar.getStyle().set("bottom", "8px");
+        modeBar.getStyle().set("background", "transparent");
+        modeBar.getStyle().set("color", "#f0f0f0");
+        // create items
+        final Runnable updateMenuStyles = () -> {
+            // Keep minimal; could adjust theme variants if needed
+        };
+        var chatItem = modeBar.addItem("Chat", e -> {
+            agentModeActive = false;
+            updateMenuStyles.run();
+        });
+        var agentItem = modeBar.addItem("Agent");
+        agentItem.addClickListener(e -> {
+            agentModeActive = true; // toggle to Agent
+            updateMenuStyles.run();
+        });
+        var sub = agentItem.getSubMenu();
+        sub.addItem("Code", e -> {
+            agentModeActive = true;
+            agentSubMode = ru.kuramshindev.springaiexample.llm.AgentMode.CODE;
+            updateMenuStyles.run();
+        });
+        sub.addItem("Ask", e -> {
+            agentModeActive = true;
+            agentSubMode = ru.kuramshindev.springaiexample.llm.AgentMode.ASK;
+            updateMenuStyles.run();
+        });
+        // default selection is Chat
+        updateMenuStyles.run();
+
+        inputWrapper.add(modeBar);
+
+        HorizontalLayout inputRow = new HorizontalLayout(inputWrapper);
         inputRow.setWidthFull();
         inputRow.setAlignItems(FlexComponent.Alignment.END);
         inputRow.setFlexGrow(1, inputWrapper);
@@ -233,8 +252,8 @@ public class ChatView extends VerticalLayout {
         conversationService.addUserMessage(prompt);
         promptInput.clear();
         refreshMessages();
-        if ("Agent".equalsIgnoreCase(modeSelect.getValue())) {
-            conversationService.generateAgentResponse(prompt);
+        if (agentModeActive) {
+            conversationService.generateAgentResponse(prompt, agentSubMode);
         } else {
             conversationService.generateAiResponse(prompt);
         }
