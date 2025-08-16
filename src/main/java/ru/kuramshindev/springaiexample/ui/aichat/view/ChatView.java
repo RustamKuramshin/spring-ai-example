@@ -178,18 +178,14 @@ public class ChatView extends VerticalLayout {
         modeBar.getStyle().set("background", "transparent");
         modeBar.getStyle().set("color", "#f0f0f0");
 
-        final Runnable updateMenuStyles = () -> log.info("RUN updateMenuStyles");
-
         var chatItem = modeBar.addItem("Chat", e -> {
             agentModeActive = false;
-            updateMenuStyles.run();
         });
         chatItem.getStyle().set("color", "#f0f0f0");
 
         var agentItem = modeBar.addItem("Agent");
         agentItem.addClickListener(e -> {
             agentModeActive = true;
-            updateMenuStyles.run();
         });
         agentItem.getStyle().set("color", "#f0f0f0");
 
@@ -198,7 +194,6 @@ public class ChatView extends VerticalLayout {
         MenuItem codeItem = agentSubMenu.addItem("Code", e -> {
             agentModeActive = true;
             agentSubMode = AgentMode.CODE;
-            updateMenuStyles.run();
         });
         codeItem.setCheckable(true);
         codeItem.setChecked(false);
@@ -206,7 +201,6 @@ public class ChatView extends VerticalLayout {
         MenuItem askItem = agentSubMenu.addItem("Ask", e -> {
             agentModeActive = true;
             agentSubMode = AgentMode.ASK;
-            updateMenuStyles.run();
         });
         askItem.setCheckable(true);
         askItem.setChecked(false);
@@ -218,8 +212,6 @@ public class ChatView extends VerticalLayout {
         askItem.addClickListener(event -> {
             codeItem.setChecked(false);
         });
-
-        updateMenuStyles.run();
 
         inputWrapper.add(modeBar);
 
