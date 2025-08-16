@@ -18,10 +18,12 @@ public class ChatClientConfig {
 
     @Bean
     public ChatClient getChatClient(ChatClient.Builder chatClientBuilder) {
+
         ChatMemory chatMemory = MessageWindowChatMemory.builder()
                 .chatMemoryRepository(chatMemoryRepository)
                 .maxMessages(20)
                 .build();
+
         return chatClientBuilder
                 .defaultAdvisors(
                         MessageChatMemoryAdvisor.builder(chatMemory).build(),

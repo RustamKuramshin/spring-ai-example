@@ -57,8 +57,8 @@ The UI is built with Vaadin, the backend with Spring Boot, and the default model
 
 **Key Classes:**
 
-* `ru.kuramshindev.springaiexample.ui.ChatView` — main Vaadin view (`/`)
-* `ru.kuramshindev.springaiexample.ui.ConversationService` — conversation storage, ChatClient & Chat Memory integration
+* `ru.kuramshindev.springaiexample.ui.aichat.view.ChatView` — main Vaadin view (`/`)
+* `ru.kuramshindev.springaiexample.ui.aichat.service.ConversationService` — conversation storage, ChatClient & Chat Memory integration
 * `ru.kuramshindev.springaiexample.ui.model.*` — conversation, message, and role models
 
 ---

@@ -1,4 +1,4 @@
-package ru.kuramshindev.springaiexample.ui.model;
+package ru.kuramshindev.springaiexample.ui.aichat.model;
 
 import lombok.Getter;
 

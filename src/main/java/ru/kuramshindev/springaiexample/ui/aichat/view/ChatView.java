@@ -1,4 +1,4 @@
-package ru.kuramshindev.springaiexample.ui;
+package ru.kuramshindev.springaiexample.ui.aichat.view;
 
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.Div;
@@ -10,8 +10,8 @@ import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.Scroller;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.select.Select;
+import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vladsch.flexmark.ext.tables.TablesExtension;
@@ -21,9 +21,10 @@ import com.vladsch.flexmark.util.ast.Node;
 import com.vladsch.flexmark.util.misc.Extension;
 import org.jsoup.Jsoup;
 import org.jsoup.safety.Safelist;
-import ru.kuramshindev.springaiexample.ui.model.Conversation;
-import ru.kuramshindev.springaiexample.ui.model.Message;
-import ru.kuramshindev.springaiexample.ui.model.Role;
+import ru.kuramshindev.springaiexample.ui.aichat.model.Conversation;
+import ru.kuramshindev.springaiexample.ui.aichat.model.Message;
+import ru.kuramshindev.springaiexample.ui.aichat.model.Role;
+import ru.kuramshindev.springaiexample.ui.aichat.service.ConversationService;
 
 import java.util.List;
 

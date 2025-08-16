@@ -14,9 +14,9 @@ public final class AgentPrompts {
            - Инструменты работы с файлами: listFiles, readTextFile, writeTextFile.
            - Инструменты сборки Maven: mvnTest, mvnPackageSkipTests.
            - Инструменты сборки Gradle: gradleTest, gradleAssembleSkipTests, gradleBuildSkipTests, gradleBuild, gradleCheck, gradleClean, gradleRefreshDepsAssemble.
-        3. Если в проекте есть Maven Wrapper (mvnw*) — используй MavenTools. 
+        3. Если в проекте есть Maven Wrapper (mvnw*) — используй MavenTools.
            Если есть Gradle Wrapper (gradlew*) — используй GradleTools.
-        4. Никогда не выходи за пределы рабочей директории. 
+        4. Никогда не выходи за пределы рабочей директории.
            Никаких сетевых вызовов, скачивания зависимостей из интернета, выполнения произвольных скриптов или команд вне белого списка инструментов.
         5. Изменения в коде делай минимальными и атомарными; всегда прикладывай ПОЛНОЕ содержимое изменённых файлов после правок.
         6. После каждой правки запускай соответствующие тесты (mvnTest или gradleTest) и анализируй вывод.

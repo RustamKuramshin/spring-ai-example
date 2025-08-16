@@ -6,13 +6,18 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.PathMatcher;
 import java.nio.file.StandardOpenOption;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
+
+import static ru.kuramshindev.springaiexample.llm.tool.ToolUtils.globToRegex;
+import static ru.kuramshindev.springaiexample.llm.tool.ToolUtils.isUnderExcluded;
+import static ru.kuramshindev.springaiexample.llm.tool.ToolUtils.normalize;
+import static ru.kuramshindev.springaiexample.llm.tool.ToolUtils.resolveSafe;
 
 @Component
 public class WorkspaceTools {
@@ -23,37 +28,32 @@ public class WorkspaceTools {
         this.baseDir = Path.of("").toRealPath();
     }
 
-    private Path resolveSafe(String relative) {
-        Path p = baseDir.resolve(relative).normalize();
-        if (!p.startsWith(baseDir)) {
-            throw new IllegalArgumentException("Path escapes workspace");
-        }
-        return p;
-    }
-
     @Tool(description = """
-        Просмотреть файлы в проекте.
-        Поддерживает glob-паттерн (например, **/*.java), исключает .git/target.
-        """)
+            Просмотреть файлы в проекте по glob-шаблону (по умолчанию **/*).
+            Кросс-платформенно; исключает служебные папки (.git, .gradle, node_modules, target, build, out, dist и т.п.).
+            """)
     public List<String> listFiles(
-            @ToolParam(description = "Glob-паттерн, например **/*.java", required = false) String glob,
-            @ToolParam(description = "Максимальная глубина поиска", required = false) Integer maxDepth
+            @ToolParam(description = "Glob-паттерн, напр. **/*.{java,kt,py,js}", required = false) String glob,
+            @ToolParam(description = "Максимум возвращаемых путей (по умолчанию 5000)", required = false) Integer maxFiles
     ) throws IOException {
-        String pattern = (glob == null || glob.isBlank()) ? "**/*" : glob;
-        int depth = (maxDepth == null ? 8 : Math.max(1, Math.min(maxDepth, 20)));
-        PathMatcher matcher = FileSystems.getDefault().getPathMatcher("glob:" + pattern);
 
-        try (Stream<Path> s = Files.walk(baseDir, depth)) {
-            return s.filter(p -> !Files.isDirectory(p))
-                    .filter(p -> {
-                        String rel = baseDir.relativize(p).toString();
-                        return !rel.startsWith(".git") && !rel.startsWith("target");
-                    })
-                    .map(p -> baseDir.relativize(p).toString())
-                    .filter(rel -> matcher.matches(Path.of(rel)))
+        final int limit = (maxFiles == null || maxFiles <= 0) ? 5000 : Math.min(maxFiles, 50_000);
+        final String pattern = (glob == null || glob.isBlank()) ? "**/*" : glob;
+
+        final Pattern regex = globToRegex(pattern);
+        final List<String> results = new ArrayList<>(Math.min(limit, 4096));
+
+        try (Stream<Path> s = Files.walk(baseDir)) {
+            s.filter(p -> !Files.isDirectory(p))
+                    .filter(p -> !isUnderExcluded(baseDir, p))
+                    .map(p -> normalize(baseDir.relativize(p)))
+                    .filter(rel -> regex.matcher(rel).matches())
                     .sorted()
-                    .toList();
+                    .limit(limit)
+                    .forEach(results::add);
         }
+
+        return results;
     }
 
     @Tool(description = "Прочитать текстовый файл в UTF-8 из рабочей директории.")
@@ -61,7 +61,7 @@ public class WorkspaceTools {
             @ToolParam(description = "Путь относительно корня проекта") String path,
             @ToolParam(description = "Обрезать до N символов", required = false) Integer maxChars
     ) throws IOException {
-        Path p = resolveSafe(path);
+        Path p = resolveSafe(baseDir, path);
         String content = Files.readString(p, StandardCharsets.UTF_8);
         if (maxChars != null && maxChars > 0 && content.length() > maxChars) {
             return content.substring(0, maxChars) + "\n... [truncated]";
@@ -70,15 +70,15 @@ public class WorkspaceTools {
     }
 
     @Tool(description = """
-        Создать/перезаписать текстовый файл в UTF-8. Если родительская папка отсутствует — создаст её.
-        Возвращает краткое резюме о записи.
-        """)
+            Создать/перезаписать текстовый файл в UTF-8. Если родительская папка отсутствует — создаст её.
+            Возвращает краткое резюме о записи.
+            """)
     public String writeTextFile(
             @ToolParam(description = "Путь относительно корня проекта") String path,
             @ToolParam(description = "Полное содержимое файла (UTF-8)") String content,
             @ToolParam(description = "Если false и файл уже есть — бросит ошибку") boolean overwrite
     ) throws IOException {
-        Path p = resolveSafe(path);
+        Path p = resolveSafe(baseDir, path);
         Files.createDirectories(p.getParent());
         if (Files.exists(p) && !overwrite) {
             throw new IllegalStateException("File exists: " + path);

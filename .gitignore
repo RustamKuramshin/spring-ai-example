@@ -40,3 +40,5 @@ out/
 /src/main/frontend/generated/
 /node_modules/
 *.jar
+*.log
+/logs/

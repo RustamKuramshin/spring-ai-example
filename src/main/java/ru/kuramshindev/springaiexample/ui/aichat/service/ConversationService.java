@@ -1,12 +1,13 @@
-package ru.kuramshindev.springaiexample.ui;
+package ru.kuramshindev.springaiexample.ui.aichat.service;
 
 import com.vaadin.flow.spring.annotation.UIScope;
 import lombok.Getter;
+import org.springframework.ai.chat.messages.UserMessage;
 import org.springframework.stereotype.Component;
 import ru.kuramshindev.springaiexample.llm.LLMService;
-import ru.kuramshindev.springaiexample.ui.model.Conversation;
-import ru.kuramshindev.springaiexample.ui.model.Message;
-import ru.kuramshindev.springaiexample.ui.model.Role;
+import ru.kuramshindev.springaiexample.ui.aichat.model.Conversation;
+import ru.kuramshindev.springaiexample.ui.aichat.model.Message;
+import ru.kuramshindev.springaiexample.ui.aichat.model.Role;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -82,7 +83,7 @@ public class ConversationService {
 
     public Message generateAgentResponse(String prompt) {
         // Call one agent iteration with tool-calling enabled
-        String ai = llmService.agentRunOnce(activeConversationId.toString(), new org.springframework.ai.chat.messages.UserMessage(prompt));
+        String ai = llmService.agentRunOnce(activeConversationId.toString(), new UserMessage(prompt));
         Conversation conv = getActiveConversation().orElseThrow();
         Message msg = new Message(Role.AI, ai, LocalDateTime.now());
         conv.getMessages().add(msg);

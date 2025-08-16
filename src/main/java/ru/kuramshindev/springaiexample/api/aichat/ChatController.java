@@ -1,4 +1,4 @@
-package ru.kuramshindev.springaiexample;
+package ru.kuramshindev.springaiexample.api.aichat;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.ai.chat.client.ChatClient;
@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Flux;
+import ru.kuramshindev.springaiexample.api.aichat.dto.UserInputDto;
 
 @RequiredArgsConstructor
 @RestController
