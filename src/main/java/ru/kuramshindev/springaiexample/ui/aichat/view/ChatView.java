@@ -1,6 +1,7 @@
 package ru.kuramshindev.springaiexample.ui.aichat.view;
 
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.contextmenu.MenuItem;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.icon.Icon;
@@ -19,6 +20,7 @@ import com.vladsch.flexmark.html.HtmlRenderer;
 import com.vladsch.flexmark.parser.Parser;
 import com.vladsch.flexmark.util.ast.Node;
 import com.vladsch.flexmark.util.misc.Extension;
+import lombok.extern.slf4j.Slf4j;
 import org.jsoup.Jsoup;
 import org.jsoup.safety.Safelist;
 import ru.kuramshindev.springaiexample.llm.AgentMode;
@@ -29,6 +31,7 @@ import ru.kuramshindev.springaiexample.ui.aichat.service.ConversationService;
 
 import java.util.List;
 
+@Slf4j
 @Route("")
 @PageTitle("AI Chat")
 public class ChatView extends VerticalLayout {
@@ -66,6 +69,7 @@ public class ChatView extends VerticalLayout {
     private AgentMode agentSubMode = AgentMode.ASK;
 
     public ChatView(ConversationService conversationService) {
+
         this.conversationService = conversationService;
         setSizeFull();
         setPadding(false);
@@ -134,7 +138,18 @@ public class ChatView extends VerticalLayout {
         promptInput.getStyle().set("--vaadin-input-field-placeholder-color", "#A7A7A7");
 
         promptInput.getElement().executeJs(
-                "const ta=$0.inputElement; const max=200; const adjust=()=>{ta.style.height='auto'; ta.style.height=Math.min(ta.scrollHeight,max)+'px'; ta.style.overflowY=(ta.scrollHeight>max)?'auto':'hidden';}; ta.style.paddingRight='56px'; ta.addEventListener('input', adjust); requestAnimationFrame(adjust);",
+                """
+                        const ta = $0.inputElement;
+                        const max = 200;
+                        const adjust = () => {
+                            ta.style.height = 'auto';
+                            ta.style.height = Math.min(ta.scrollHeight, max) + 'px';
+                            ta.style.overflowY = (ta.scrollHeight > max) ? 'auto' : 'hidden';
+                        };
+                        ta.style.paddingRight = '56px';
+                        ta.addEventListener('input', adjust);
+                        requestAnimationFrame(adjust);
+                        """,
                 promptInput.getElement());
 
         sendBtn.getStyle().set("position", "absolute");
@@ -163,28 +178,45 @@ public class ChatView extends VerticalLayout {
         modeBar.getStyle().set("background", "transparent");
         modeBar.getStyle().set("color", "#f0f0f0");
 
-        final Runnable updateMenuStyles = () -> {
+        final Runnable updateMenuStyles = () -> log.info("RUN updateMenuStyles");
 
-        };
         var chatItem = modeBar.addItem("Chat", e -> {
             agentModeActive = false;
             updateMenuStyles.run();
         });
+        chatItem.getStyle().set("color", "#f0f0f0");
+
         var agentItem = modeBar.addItem("Agent");
         agentItem.addClickListener(e -> {
             agentModeActive = true;
             updateMenuStyles.run();
         });
-        var sub = agentItem.getSubMenu();
-        sub.addItem("Code", e -> {
+        agentItem.getStyle().set("color", "#f0f0f0");
+
+        var agentSubMenu = agentItem.getSubMenu();
+
+        MenuItem codeItem = agentSubMenu.addItem("Code", e -> {
             agentModeActive = true;
-            agentSubMode = ru.kuramshindev.springaiexample.llm.AgentMode.CODE;
+            agentSubMode = AgentMode.CODE;
             updateMenuStyles.run();
         });
-        sub.addItem("Ask", e -> {
+        codeItem.setCheckable(true);
+        codeItem.setChecked(false);
+
+        MenuItem askItem = agentSubMenu.addItem("Ask", e -> {
             agentModeActive = true;
-            agentSubMode = ru.kuramshindev.springaiexample.llm.AgentMode.ASK;
+            agentSubMode = AgentMode.ASK;
             updateMenuStyles.run();
+        });
+        askItem.setCheckable(true);
+        askItem.setChecked(false);
+
+        codeItem.addClickListener(event -> {
+            askItem.setChecked(false);
+        });
+
+        askItem.addClickListener(event -> {
+            codeItem.setChecked(false);
         });
 
         updateMenuStyles.run();
