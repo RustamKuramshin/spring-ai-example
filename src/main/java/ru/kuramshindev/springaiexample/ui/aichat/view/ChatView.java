@@ -1,7 +1,5 @@
 package ru.kuramshindev.springaiexample.ui.aichat.view;
 
-import com.vaadin.flow.component.Key;
-import com.vaadin.flow.component.ShortcutRegistration;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H2;
@@ -35,7 +33,6 @@ import java.util.List;
 @PageTitle("AI Chat")
 public class ChatView extends VerticalLayout {
 
-    // Markdown parser and renderer (static to reuse)
     private static final Parser MD_PARSER = Parser.builder()
             .extensions(List.<Extension>of(TablesExtension.create()))
             .build();
@@ -50,27 +47,23 @@ public class ChatView extends VerticalLayout {
         if (markdown == null || markdown.isEmpty()) return "";
         Node document = MD_PARSER.parse(markdown);
         String html = MD_RENDERER.render(document);
-        // Ensure links open in new tab and are safe (noopener)
+
         html = html.replaceAll("<a ", "<a target=\"_blank\" rel=\"noopener noreferrer\" ");
         return Jsoup.clean(html, MARKDOWN_SAFELIST);
     }
 
     private final ConversationService conversationService;
-
     private final VerticalLayout conversationsPanel = new VerticalLayout();
     private final ListBox<Conversation> conversationsList = new ListBox<>();
     private final Button addConversationBtn = new Button("+ New");
     private final Button deleteConversationBtn = new Button("Delete");
-
     private final Scroller messagesScroller = new Scroller();
     private final VerticalLayout messagesContainer = new VerticalLayout();
-
     private final TextArea promptInput = new TextArea();
     private final Button sendBtn = new Button(new Icon(VaadinIcon.ARROW_UP));
 
-    // Mode state
-    private boolean agentModeActive = false; // false = Chat, true = Agent
-    private AgentMode agentSubMode = AgentMode.ASK; // default for Agent
+    private boolean agentModeActive = false;
+    private AgentMode agentSubMode = AgentMode.ASK;
 
     public ChatView(ConversationService conversationService) {
         this.conversationService = conversationService;
@@ -78,7 +71,6 @@ public class ChatView extends VerticalLayout {
         setPadding(false);
         setSpacing(false);
 
-        // Left panel: conversations
         conversationsPanel.setWidth("320px");
         conversationsPanel.setHeightFull();
         conversationsPanel.setPadding(true);
@@ -120,7 +112,6 @@ public class ChatView extends VerticalLayout {
 
         conversationsPanel.add(conversationsList, convActions);
 
-        // Right side: messages + input
         messagesContainer.setPadding(true);
         messagesContainer.setSpacing(true);
         messagesContainer.setWidthFull();
@@ -133,24 +124,19 @@ public class ChatView extends VerticalLayout {
         promptInput.setMinHeight("80px");
         promptInput.setMaxHeight("200px");
         promptInput.setPlaceholder("Спросите что-нибудь...");
-        // Dark style and rounded corners for the input
+
         promptInput.getStyle().set("background-color", "#303030");
         promptInput.getStyle().set("color", "#f0f0f0");
         promptInput.getStyle().set("border-radius", "12px");
         promptInput.getStyle().set("border", "1px solid #3a3a3a");
         promptInput.getStyle().set("overflow", "auto");
-        // Placeholder color
+
         promptInput.getStyle().set("--vaadin-input-field-placeholder-color", "#A7A7A7");
-        // Ensure text doesn't go under the send button: extra right padding on the native textarea
-        // and auto-resize behavior remains
+
         promptInput.getElement().executeJs(
                 "const ta=$0.inputElement; const max=200; const adjust=()=>{ta.style.height='auto'; ta.style.height=Math.min(ta.scrollHeight,max)+'px'; ta.style.overflowY=(ta.scrollHeight>max)?'auto':'hidden';}; ta.style.paddingRight='56px'; ta.addEventListener('input', adjust); requestAnimationFrame(adjust);",
                 promptInput.getElement());
 
-        // Send button styling: circular, icon-only, inside the input at right center
-        // Make the button white with a black arrow
-        // Remove primary theme to avoid blue background
-        // and use custom styles instead
         sendBtn.getStyle().set("position", "absolute");
         sendBtn.getStyle().set("right", "16px");
         sendBtn.getStyle().set("top", "50%");
@@ -165,12 +151,10 @@ public class ChatView extends VerticalLayout {
         sendBtn.getStyle().set("color", "#000000");
         sendBtn.addClickListener(e -> onSend());
 
-        // Wrap the text area and the send button to place the button inside the field
         Div inputWrapper = new Div(promptInput, sendBtn);
         inputWrapper.setWidthFull();
         inputWrapper.getStyle().set("position", "relative");
 
-        // MenuBar inside the input area, below the text area
         MenuBar modeBar = new MenuBar();
         modeBar.setOpenOnHover(true);
         modeBar.getStyle().set("position", "absolute");
@@ -178,9 +162,9 @@ public class ChatView extends VerticalLayout {
         modeBar.getStyle().set("bottom", "8px");
         modeBar.getStyle().set("background", "transparent");
         modeBar.getStyle().set("color", "#f0f0f0");
-        // create items
+
         final Runnable updateMenuStyles = () -> {
-            // Keep minimal; could adjust theme variants if needed
+
         };
         var chatItem = modeBar.addItem("Chat", e -> {
             agentModeActive = false;
@@ -188,7 +172,7 @@ public class ChatView extends VerticalLayout {
         });
         var agentItem = modeBar.addItem("Agent");
         agentItem.addClickListener(e -> {
-            agentModeActive = true; // toggle to Agent
+            agentModeActive = true;
             updateMenuStyles.run();
         });
         var sub = agentItem.getSubMenu();
@@ -202,7 +186,7 @@ public class ChatView extends VerticalLayout {
             agentSubMode = ru.kuramshindev.springaiexample.llm.AgentMode.ASK;
             updateMenuStyles.run();
         });
-        // default selection is Chat
+
         updateMenuStyles.run();
 
         inputWrapper.add(modeBar);
@@ -213,7 +197,6 @@ public class ChatView extends VerticalLayout {
         inputRow.setFlexGrow(1, inputWrapper);
         inputRow.getStyle().set("padding", "0 24px 24px 24px");
 
-        // Make the chat dialog and input more compact (focused): 1/3 of page width
         messagesScroller.setWidthFull();
         VerticalLayout chatWrapper = new VerticalLayout(messagesScroller, inputRow);
         chatWrapper.setWidth("33vw");
@@ -274,7 +257,7 @@ public class ChatView extends VerticalLayout {
                     bubble.getStyle().set("border-radius", "var(--lumo-border-radius-l)");
                     bubble.getStyle().set("max-width", "70%");
                     bubble.getStyle().set("white-space", "pre-wrap");
-                    // Ensure long words/URLs wrap inside the bubble and do not overflow
+
                     bubble.getStyle().set("overflow-wrap", "anywhere");
                     bubble.getStyle().set("word-break", "break-word");
                     bubble.getStyle().set("background-color", "#2E2E2E");
@@ -285,15 +268,15 @@ public class ChatView extends VerticalLayout {
                     line.add(bubble);
                 } else {
                     Div text = new Div();
-                    // For markdown-rendered content, use normal white-space (HTML handles line breaks)
+
                     text.getStyle().set("white-space", "normal");
-                    // Ensure long words/URLs wrap and stay within container
+
                     text.getStyle().set("overflow-wrap", "anywhere");
                     text.getStyle().set("word-break", "break-word");
                     text.getStyle().set("color", "#FFFFFF");
                     text.getStyle().set("max-width", "70%");
                     text.getStyle().set("background-color", "transparent");
-                    // Basic spacing similar to user bubble, but subtle
+
                     text.getStyle().set("padding", "var(--lumo-space-s) 0");
 
                     String safeHtml = markdownToSafeHtml(m.getContent());
